@@ -1,10 +1,20 @@
 "use client";
 
-import { Search, Upload, Bell } from "lucide-react";
+import { Search, Upload, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { logout } from "@/app/actions/auth";
 
-export function TopNav() {
+export function TopNav({ email }: { email: string }) {
+  const initial = email.charAt(0).toUpperCase();
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur-md">
       <div className="flex flex-1 justify-center">
@@ -29,11 +39,23 @@ export function TopNav() {
         >
           <Bell className="h-[18px] w-[18px]" />
         </Button>
-        <Avatar className="h-8 w-8 cursor-pointer">
-          <AvatarFallback className="bg-accent text-[13px] font-medium">
-            F
-          </AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar className="h-8 w-8 cursor-pointer">
+              <AvatarFallback className="bg-accent text-[13px] font-medium">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={() => logout()}>
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

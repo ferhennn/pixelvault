@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppShell } from "@/components/layout/app-shell";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,9 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full antialiased">
-        <TooltipProvider delay={300}>
-          <AppShell>{children}</AppShell>
-        </TooltipProvider>
+        <TooltipProvider delay={300}>{children}</TooltipProvider>
       </body>
     </html>
   );

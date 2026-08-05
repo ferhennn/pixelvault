@@ -5,7 +5,13 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { cn } from "@/lib/utils";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  email,
+}: {
+  children: React.ReactNode;
+  email: string;
+}) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -17,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           collapsed ? "ml-[72px]" : "ml-[240px]",
         )}
       >
-        <TopNav />
+        <TopNav email={email} />
         <main className="flex-1">
           <div className="mx-auto w-full max-w-[1600px] px-8 py-10">
             {children}

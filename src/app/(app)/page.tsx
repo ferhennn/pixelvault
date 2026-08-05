@@ -1,7 +1,8 @@
 import { SearchHero } from "@/features/search/search-hero";
 import { QuickFilters } from "@/features/search/quick-filters";
 import { MasonryGrid } from "@/components/shared/masonry-grid";
-import { mockScreenshots } from "@/lib/mock-data";
+import { getScreenshots } from "@/lib/supabase/queries";
+import { getUser } from "@/lib/supabase/dal";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -10,17 +11,21 @@ function getGreeting() {
   return "Good Evening";
 }
 
-export default function Home() {
+export default async function Home() {
+  const [screenshots, user] = await Promise.all([getScreenshots(), getUser()]);
+  const name = user?.email?.split("@")[0] ?? "";
+
   return (
     <div className="flex flex-col gap-14">
       <section className="flex flex-col items-center gap-10 pt-4 text-center">
         <div className="space-y-2">
           <h1 className="text-[44px] font-semibold tracking-tight text-foreground">
-            {getGreeting()}, Farhan.
+            {getGreeting()}{name && `, ${name}`}.
           </h1>
           <p className="text-[15px] text-muted-foreground">
-            {mockScreenshots.length.toLocaleString()} screenshots &middot;
-            Everything is instantly searchable.
+            {screenshots.length.toLocaleString()} screenshot
+            {screenshots.length === 1 ? "" : "s"} &middot; Everything is
+            instantly searchable.
           </p>
         </div>
 
@@ -32,7 +37,13 @@ export default function Home() {
         <h2 className="text-[19px] font-semibold tracking-tight text-foreground">
           Recent Screenshots
         </h2>
-        <MasonryGrid screenshots={mockScreenshots} />
+        {screenshots.length > 0 ? (
+          <MasonryGrid screenshots={screenshots} />
+        ) : (
+          <p className="text-[13.5px] text-muted-foreground">
+            No screenshots yet. Upload your first one from the top bar.
+          </p>
+        )}
       </section>
     </div>
   );

@@ -6,6 +6,7 @@ import {
   Camera,
   Search,
   Image as ImageIcon,
+  Folder,
   FolderKanban,
   Heart,
   Clock,
@@ -22,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 const navItems = [
   { href: "/search", label: "Search", icon: Search },
   { href: "/", label: "Library", icon: ImageIcon },
+  { href: "/projects", label: "Projects", icon: Folder },
   { href: "/collections", label: "Collections", icon: FolderKanban },
   { href: "/favorites", label: "Favorites", icon: Heart },
   { href: "/recent", label: "Recent", icon: Clock },

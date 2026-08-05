@@ -16,4 +16,5 @@ export interface Screenshot {
   tags: string[];
   createdAt: string;
   aspectRatio: number;
+  projectId?: string;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Upload, Bell, LogOut } from "lucide-react";
+import { Search, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -12,8 +12,16 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/app/actions/auth";
+import { UploadDialog } from "@/features/upload/upload-dialog";
+import type { ProjectRow } from "@/types/db";
 
-export function TopNav({ email }: { email: string }) {
+export function TopNav({
+  email,
+  projects,
+}: {
+  email: string;
+  projects: ProjectRow[];
+}) {
   const initial = email.charAt(0).toUpperCase();
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur-md">
@@ -28,10 +36,7 @@ export function TopNav({ email }: { email: string }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button size="sm" className="gap-1.5 rounded-full">
-          <Upload className="h-[15px] w-[15px]" />
-          Upload
-        </Button>
+        <UploadDialog projects={projects} />
         <Button
           size="icon"
           variant="ghost"

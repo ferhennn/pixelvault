@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { MasonryGrid } from "@/components/shared/masonry-grid";
+import { ProjectHeaderActions } from "@/components/shared/project-header-actions";
 import { getProjects, getScreenshots } from "@/lib/supabase/queries";
 
 export default async function ProjectDetailPage(
@@ -26,19 +27,26 @@ export default async function ProjectDetailPage(
           <ArrowLeft className="h-[14px] w-[14px]" />
           Projects
         </Link>
-        <div className="space-y-2">
-          <h1 className="text-[28px] font-semibold tracking-tight text-foreground">
-            {project.name}
-          </h1>
-          <p className="text-[15px] text-muted-foreground">
-            {screenshots.length.toLocaleString()} screenshot
-            {screenshots.length === 1 ? "" : "s"}
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-[28px] font-semibold tracking-tight text-foreground">
+              {project.name}
+            </h1>
+            <p className="text-[15px] text-muted-foreground">
+              {screenshots.length.toLocaleString()} screenshot
+              {screenshots.length === 1 ? "" : "s"}
+            </p>
+          </div>
+          <ProjectHeaderActions projectId={project.id} projectName={project.name} />
         </div>
       </div>
 
       {screenshots.length > 0 ? (
-        <MasonryGrid screenshots={screenshots} />
+        <MasonryGrid
+          screenshots={screenshots}
+          projects={projects}
+          currentProjectId={project.id}
+        />
       ) : (
         <p className="text-[13.5px] text-muted-foreground">
           No screenshots in this project yet.

@@ -97,3 +97,51 @@ export async function renameScreenshot(
   revalidatePath("/projects");
   return {};
 }
+
+export async function moveScreenshot(
+  id: string,
+  projectId: string | null,
+): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("screenshots")
+    .update({ project_id: projectId })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  return {};
+}
+
+export async function deleteScreenshot(id: string): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { data: row, error: fetchError } = await supabase
+    .from("screenshots")
+    .select("storage_path")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (fetchError) return { error: fetchError.message };
+
+  const { error: deleteError } = await supabase
+    .from("screenshots")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (deleteError) return { error: deleteError.message };
+
+  await supabase.storage.from("screenshots").remove([row.storage_path]);
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  return {};
+}

@@ -1,16 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Heart, Trash2, ExternalLink, ClipboardCopy } from "lucide-react";
+import {
+  Heart,
+  Trash2,
+  ExternalLink,
+  ClipboardCopy,
+  FolderInput,
+  FolderMinus,
+} from "lucide-react";
 import type { Screenshot } from "@/types/screenshot";
+import type { ProjectRow } from "@/types/db";
 import { categoryGradients } from "@/lib/category-styles";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScreenshotLightbox } from "@/components/shared/screenshot-lightbox";
+import { moveScreenshot, deleteScreenshot } from "@/app/actions/screenshots";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
-export function ScreenshotCard({ screenshot }: { screenshot: Screenshot }) {
+export function ScreenshotCard({
+  screenshot,
+  projects = [],
+  currentProjectId,
+}: {
+  screenshot: Screenshot;
+  projects?: ProjectRow[];
+  currentProjectId?: string;
+}) {
+  const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function handleMove(projectId: string | null) {
+    startTransition(async () => {
+      await moveScreenshot(screenshot.id, projectId);
+      router.refresh();
+    });
+  }
+
+  function handleDelete() {
+    startTransition(async () => {
+      await deleteScreenshot(screenshot.id);
+      setDeleteOpen(false);
+      router.refresh();
+    });
+  }
 
   return (
     <motion.article
@@ -42,12 +94,56 @@ export function ScreenshotCard({ screenshot }: { screenshot: Screenshot }) {
         <div className="absolute right-2.5 top-2.5 flex gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <QuickAction icon={Heart} label="Favorite" />
           <QuickAction icon={ClipboardCopy} label="Copy OCR" />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Move to project"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#111] backdrop-blur-sm transition-colors hover:bg-white"
+                />
+              }
+            >
+              <FolderInput className="h-[13px] w-[13px]" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+              {currentProjectId && screenshot.projectId === currentProjectId && (
+                <>
+                  <DropdownMenuItem onClick={() => handleMove(null)}>
+                    <FolderMinus className="h-4 w-4" />
+                    Remove from project
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {projects.length === 0 ? (
+                <DropdownMenuItem disabled>No projects yet</DropdownMenuItem>
+              ) : (
+                projects.map((p) => (
+                  <DropdownMenuItem
+                    key={p.id}
+                    disabled={p.id === screenshot.projectId}
+                    onClick={() => handleMove(p.id)}
+                  >
+                    {p.name}
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <QuickAction
             icon={ExternalLink}
             label="Open"
             onClick={() => setLightboxOpen(true)}
           />
-          <QuickAction icon={Trash2} label="Delete" />
+          <QuickAction
+            icon={Trash2}
+            label="Delete"
+            onClick={() => setDeleteOpen(true)}
+          />
         </div>
 
         {screenshot.tags.length > 0 && (
@@ -72,6 +168,32 @@ export function ScreenshotCard({ screenshot }: { screenshot: Screenshot }) {
           onOpenChange={setLightboxOpen}
         />
       )}
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent
+          showCloseButton
+          className="sm:max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DialogHeader>
+            <DialogTitle>Delete this screenshot?</DialogTitle>
+            <DialogDescription>
+              &ldquo;{screenshot.title}&rdquo; will be permanently removed. This
+              can&apos;t be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={pending}
+              onClick={handleDelete}
+            >
+              {pending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.article>
   );
 }

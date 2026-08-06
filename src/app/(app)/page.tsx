@@ -1,7 +1,7 @@
 import { SearchHero } from "@/features/search/search-hero";
 import { QuickFilters } from "@/features/search/quick-filters";
 import { MasonryGrid } from "@/components/shared/masonry-grid";
-import { getScreenshots } from "@/lib/supabase/queries";
+import { getScreenshots, getProjects } from "@/lib/supabase/queries";
 import { getUser } from "@/lib/supabase/dal";
 
 function getGreeting() {
@@ -12,7 +12,11 @@ function getGreeting() {
 }
 
 export default async function Home() {
-  const [screenshots, user] = await Promise.all([getScreenshots(), getUser()]);
+  const [screenshots, projects, user] = await Promise.all([
+    getScreenshots(),
+    getProjects(),
+    getUser(),
+  ]);
   const name = user?.email?.split("@")[0] ?? "";
 
   return (
@@ -38,7 +42,7 @@ export default async function Home() {
           Recent Screenshots
         </h2>
         {screenshots.length > 0 ? (
-          <MasonryGrid screenshots={screenshots} />
+          <MasonryGrid screenshots={screenshots} projects={projects} />
         ) : (
           <p className="text-[13.5px] text-muted-foreground">
             No screenshots yet. Upload your first one from the top bar.

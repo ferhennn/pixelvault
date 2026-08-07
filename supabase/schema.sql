@@ -26,8 +26,12 @@ create table if not exists public.screenshots (
   created_at timestamptz not null default now()
 );
 
-create index if not exists screenshots_user_id_idx on public.screenshots (user_id);
-create index if not exists screenshots_project_id_idx on public.screenshots (project_id);
+create index if not exists screenshots_user_id_created_at_idx
+  on public.screenshots (user_id, created_at desc);
+create index if not exists screenshots_project_id_created_at_idx
+  on public.screenshots (project_id, created_at desc);
+create index if not exists projects_user_id_updated_at_idx
+  on public.projects (user_id, updated_at desc);
 
 alter table public.projects enable row level security;
 alter table public.screenshots enable row level security;

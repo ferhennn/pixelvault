@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectRow } from "@/types/db";
-import type { Screenshot } from "@/types/screenshot";
+import type { Screenshot, ScreenshotCategory } from "@/types/screenshot";
 
 export const getProjects = cache(async (): Promise<ProjectRow[]> => {
   const supabase = await createClient();
@@ -15,7 +15,10 @@ export const getProjects = cache(async (): Promise<ProjectRow[]> => {
   return data ?? [];
 });
 
-export async function getScreenshots(projectId?: string): Promise<Screenshot[]> {
+export async function getScreenshots(
+  projectId?: string,
+  category?: ScreenshotCategory,
+): Promise<Screenshot[]> {
   const supabase = await createClient();
 
   let query = supabase
@@ -24,6 +27,7 @@ export async function getScreenshots(projectId?: string): Promise<Screenshot[]> 
     .order("created_at", { ascending: false });
 
   if (projectId) query = query.eq("project_id", projectId);
+  if (category) query = query.eq("category", category);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
@@ -50,11 +54,41 @@ export async function getScreenshots(projectId?: string): Promise<Screenshot[]> 
   }));
 }
 
-export type ProjectSummary = { count: number; coverImages: string[] };
+export type CoverSummary = { count: number; coverImages: string[] };
 
 const MAX_COVER_IMAGES = 4;
 
-/** Per-project screenshot count + up to 4 cover thumbnails, without signing every screenshot in the account. */
+/** Groups storage paths by key, signs up to MAX_COVER_IMAGES covers per group, without signing every screenshot in the account. */
+async function summarizeByCover(
+  pathsByKey: Map<string, string[]>,
+): Promise<Map<string, CoverSummary>> {
+  const supabase = await createClient();
+
+  const coverPaths = [...pathsByKey.values()].flatMap((paths) =>
+    paths.slice(0, MAX_COVER_IMAGES),
+  );
+
+  const { data: signed, error: signError } = coverPaths.length
+    ? await supabase.storage.from("screenshots").createSignedUrls(coverPaths, 3600)
+    : { data: [], error: null };
+
+  if (signError) throw new Error(signError.message);
+
+  const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+
+  const summaries = new Map<string, CoverSummary>();
+  for (const [key, paths] of pathsByKey) {
+    summaries.set(key, {
+      count: paths.length,
+      coverImages: paths.slice(0, MAX_COVER_IMAGES).map((p) => urlByPath.get(p) ?? ""),
+    });
+  }
+  return summaries;
+}
+
+export type ProjectSummary = CoverSummary;
+
+/** Per-project screenshot count + up to 4 cover thumbnails. */
 export async function getProjectSummaries(): Promise<Map<string, ProjectSummary>> {
   const supabase = await createClient();
 
@@ -74,24 +108,28 @@ export async function getProjectSummaries(): Promise<Map<string, ProjectSummary>
     pathsByProject.set(projectId, paths);
   }
 
-  const coverPaths = [...pathsByProject.values()].flatMap((paths) =>
-    paths.slice(0, MAX_COVER_IMAGES),
-  );
+  return summarizeByCover(pathsByProject);
+}
 
-  const { data: signed, error: signError } = coverPaths.length
-    ? await supabase.storage.from("screenshots").createSignedUrls(coverPaths, 3600)
-    : { data: [], error: null };
+export type CategorySummary = CoverSummary;
 
-  if (signError) throw new Error(signError.message);
+/** Per-category screenshot count + up to 4 cover thumbnails. */
+export async function getCategorySummaries(): Promise<Map<ScreenshotCategory, CategorySummary>> {
+  const supabase = await createClient();
 
-  const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+  const { data, error } = await supabase
+    .from("screenshots")
+    .select("category, storage_path")
+    .order("created_at", { ascending: false });
 
-  const summaries = new Map<string, ProjectSummary>();
-  for (const [projectId, paths] of pathsByProject) {
-    summaries.set(projectId, {
-      count: paths.length,
-      coverImages: paths.slice(0, MAX_COVER_IMAGES).map((p) => urlByPath.get(p) ?? ""),
-    });
+  if (error) throw new Error(error.message);
+
+  const pathsByCategory = new Map<string, string[]>();
+  for (const row of data ?? []) {
+    const paths = pathsByCategory.get(row.category) ?? [];
+    paths.push(row.storage_path);
+    pathsByCategory.set(row.category, paths);
   }
-  return summaries;
+
+  return summarizeByCover(pathsByCategory) as Promise<Map<ScreenshotCategory, CategorySummary>>;
 }

@@ -1,9 +1,10 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { ProjectRow } from "@/types/db";
 import type { Screenshot } from "@/types/screenshot";
 
-export async function getProjects(): Promise<ProjectRow[]> {
+export const getProjects = cache(async (): Promise<ProjectRow[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
@@ -12,7 +13,7 @@ export async function getProjects(): Promise<ProjectRow[]> {
 
   if (error) throw new Error(error.message);
   return data ?? [];
-}
+});
 
 export async function getScreenshots(projectId?: string): Promise<Screenshot[]> {
   const supabase = await createClient();
@@ -47,4 +48,50 @@ export async function getScreenshots(projectId?: string): Promise<Screenshot[]> 
     aspectRatio: row.width / row.height,
     projectId: row.project_id ?? undefined,
   }));
+}
+
+export type ProjectSummary = { count: number; coverImages: string[] };
+
+const MAX_COVER_IMAGES = 4;
+
+/** Per-project screenshot count + up to 4 cover thumbnails, without signing every screenshot in the account. */
+export async function getProjectSummaries(): Promise<Map<string, ProjectSummary>> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("screenshots")
+    .select("project_id, storage_path")
+    .not("project_id", "is", null)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const pathsByProject = new Map<string, string[]>();
+  for (const row of data ?? []) {
+    const projectId = row.project_id as string;
+    const paths = pathsByProject.get(projectId) ?? [];
+    paths.push(row.storage_path);
+    pathsByProject.set(projectId, paths);
+  }
+
+  const coverPaths = [...pathsByProject.values()].flatMap((paths) =>
+    paths.slice(0, MAX_COVER_IMAGES),
+  );
+
+  const { data: signed, error: signError } = coverPaths.length
+    ? await supabase.storage.from("screenshots").createSignedUrls(coverPaths, 3600)
+    : { data: [], error: null };
+
+  if (signError) throw new Error(signError.message);
+
+  const urlByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+
+  const summaries = new Map<string, ProjectSummary>();
+  for (const [projectId, paths] of pathsByProject) {
+    summaries.set(projectId, {
+      count: paths.length,
+      coverImages: paths.slice(0, MAX_COVER_IMAGES).map((p) => urlByPath.get(p) ?? ""),
+    });
+  }
+  return summaries;
 }

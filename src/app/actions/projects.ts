@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/supabase/dal";
+import { revalidateLibrary } from "@/lib/revalidate";
 import type { ProjectRow } from "@/types/db";
 
 export async function createProject(name: string): Promise<
@@ -61,7 +62,6 @@ export async function deleteProject(id: string): Promise<{ error?: string }> {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
-  revalidatePath("/projects");
+  revalidateLibrary();
   return {};
 }

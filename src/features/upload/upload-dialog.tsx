@@ -13,11 +13,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { quickFilters } from "@/lib/mock-data";
 import { uploadScreenshot } from "@/app/actions/screenshots";
 import { createProject } from "@/app/actions/projects";
 import type { ProjectRow } from "@/types/db";
-import type { ScreenshotCategory } from "@/types/screenshot";
+import { CATEGORIES, type ScreenshotCategory } from "@/lib/categories";
 
 type PendingFile = {
   file: File;
@@ -74,35 +73,36 @@ export function UploadDialog({ projects }: { projects: ProjectRow[] }) {
     if (files.length === 0) return;
 
     startTransition(async () => {
-      for (let i = 0; i < files.length; i++) {
-        setFiles((prev) =>
-          prev.map((f, idx) => (idx === i ? { ...f, status: "uploading" } : f)),
-        );
+      await Promise.all(
+        files.map(async (item, i) => {
+          setFiles((prev) =>
+            prev.map((f, idx) => (idx === i ? { ...f, status: "uploading" } : f)),
+          );
 
-        const item = files[i];
-        const dimensions = await readImageDimensions(item.file);
+          const dimensions = await readImageDimensions(item.file);
 
-        const formData = new FormData();
-        formData.set("file", item.file);
-        formData.set("title", item.title || titleFromFilename(item.file.name));
-        formData.set("category", category);
-        formData.set("tags", tags);
-        formData.set("projectId", projectId);
-        formData.set("width", String(dimensions.width));
-        formData.set("height", String(dimensions.height));
+          const formData = new FormData();
+          formData.set("file", item.file);
+          formData.set("title", item.title || titleFromFilename(item.file.name));
+          formData.set("category", category);
+          formData.set("tags", tags);
+          formData.set("projectId", projectId);
+          formData.set("width", String(dimensions.width));
+          formData.set("height", String(dimensions.height));
 
-        const result = await uploadScreenshot(formData);
+          const result = await uploadScreenshot(formData);
 
-        setFiles((prev) =>
-          prev.map((f, idx) =>
-            idx === i
-              ? result.error
-                ? { ...f, status: "error", error: result.error }
-                : { ...f, status: "done" }
-              : f,
-          ),
-        );
-      }
+          setFiles((prev) =>
+            prev.map((f, idx) =>
+              idx === i
+                ? result.error
+                  ? { ...f, status: "error", error: result.error }
+                  : { ...f, status: "done" }
+                : f,
+            ),
+          );
+        }),
+      );
     });
   }
 
@@ -204,7 +204,7 @@ export function UploadDialog({ projects }: { projects: ProjectRow[] }) {
               onChange={(e) => setCategory(e.target.value as ScreenshotCategory)}
               className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              {quickFilters.map((c) => (
+              {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

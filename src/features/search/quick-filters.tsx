@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { quickFilters } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/categories";
 
 export function QuickFilters() {
   const [active, setActive] = useState<string | null>(null);
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      {quickFilters.map((filter) => (
+      {CATEGORIES.map((filter) => (
         <button
           key={filter}
           onClick={() => setActive((v) => (v === filter ? null : filter))}

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { MasonryGrid } from "@/components/shared/masonry-grid";
 import { ProjectHeaderActions } from "@/components/shared/project-header-actions";
 import { getProjects, getScreenshots } from "@/lib/supabase/queries";
+import { pluralize } from "@/utils/pluralize";
 
 export default async function ProjectDetailPage(
   props: PageProps<"/projects/[projectId]">,
@@ -33,8 +34,8 @@ export default async function ProjectDetailPage(
               {project.name}
             </h1>
             <p className="text-[15px] text-muted-foreground">
-              {screenshots.length.toLocaleString()} screenshot
-              {screenshots.length === 1 ? "" : "s"}
+              {screenshots.length.toLocaleString()}{" "}
+              {pluralize(screenshots.length, "screenshot")}
             </p>
           </div>
           <ProjectHeaderActions projectId={project.id} projectName={project.name} />

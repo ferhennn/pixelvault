@@ -64,43 +64,27 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 space-y-0.5 px-3 py-2">
-        {navItems.map((item) => {
-          const active = pathname === item.href;
-          const link = (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium text-foreground/70 transition-colors hover:bg-accent hover:text-foreground",
-                active && "bg-accent text-foreground",
-                collapsed && "justify-center px-0",
-              )}
-            >
-              <item.icon className="h-[18px] w-[18px] shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-
-          if (!collapsed) return link;
-
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger render={link} />
-              <TooltipContent side="right">{item.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
+        {navItems.map((item) => (
+          <SidebarLink
+            key={item.href}
+            href={item.href}
+            label={item.label}
+            icon={item.icon}
+            collapsed={collapsed}
+            active={pathname === item.href}
+          />
+        ))}
       </nav>
 
       <div className="space-y-0.5 px-3 pb-3">
-        <SidebarFooterLink
+        <SidebarLink
           href="/settings"
           label="Settings"
           icon={Settings}
           collapsed={collapsed}
           active={pathname === "/settings"}
         />
-        <SidebarFooterLink
+        <SidebarLink
           href="/storage"
           label="Storage Usage"
           icon={HardDrive}
@@ -131,7 +115,7 @@ export function Sidebar({
   );
 }
 
-function SidebarFooterLink({
+function SidebarLink({
   href,
   label,
   icon: Icon,

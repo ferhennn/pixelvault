@@ -15,6 +15,7 @@ import {
 import type { Screenshot } from "@/types/screenshot";
 import type { ProjectRow } from "@/types/db";
 import { categoryGradients } from "@/lib/category-styles";
+import { floatingIconButtonClass } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScreenshotLightbox } from "@/components/shared/screenshot-lightbox";
@@ -102,7 +103,7 @@ export function ScreenshotCard({
                   type="button"
                   aria-label="Move to project"
                   onClick={(e) => e.stopPropagation()}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#111] backdrop-blur-sm transition-colors hover:bg-white"
+                  className={floatingIconButtonClass}
                 />
               }
             >
@@ -215,7 +216,7 @@ function QuickAction({
         e.stopPropagation();
         onClick?.();
       }}
-      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#111] backdrop-blur-sm transition-colors hover:bg-white"
+      className={floatingIconButtonClass}
     >
       <Icon className="h-[13px] w-[13px]" />
     </button>

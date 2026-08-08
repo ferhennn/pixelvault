@@ -3,6 +3,7 @@ import { QuickFilters } from "@/features/search/quick-filters";
 import { MasonryGrid } from "@/components/shared/masonry-grid";
 import { getScreenshots, getProjects } from "@/lib/supabase/queries";
 import { getUser } from "@/lib/supabase/dal";
+import { pluralize } from "@/utils/pluralize";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -27,8 +28,8 @@ export default async function Home() {
             {getGreeting()}{name && `, ${name}`}.
           </h1>
           <p className="text-[15px] text-muted-foreground">
-            {screenshots.length.toLocaleString()} screenshot
-            {screenshots.length === 1 ? "" : "s"} &middot; Everything is
+            {screenshots.length.toLocaleString()}{" "}
+            {pluralize(screenshots.length, "screenshot")} &middot; Everything is
             instantly searchable.
           </p>
         </div>

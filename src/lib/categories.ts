@@ -1,4 +1,4 @@
-export const quickFilters = [
+export const CATEGORIES = [
   "Code",
   "Design",
   "Errors",
@@ -8,3 +8,5 @@ export const quickFilters = [
   "AI",
   "UI Inspiration",
 ] as const;
+
+export type ScreenshotCategory = (typeof CATEGORIES)[number];

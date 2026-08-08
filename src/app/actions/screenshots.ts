@@ -3,18 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/supabase/dal";
-import type { ScreenshotCategory } from "@/types/screenshot";
-
-const CATEGORIES: ScreenshotCategory[] = [
-  "Code",
-  "Design",
-  "Errors",
-  "Documents",
-  "Receipts",
-  "Ideas",
-  "AI",
-  "UI Inspiration",
-];
+import { CATEGORIES, type ScreenshotCategory } from "@/lib/categories";
+import { revalidateLibrary } from "@/lib/revalidate";
 
 export type UploadResult = { error?: string };
 
@@ -71,8 +61,7 @@ export async function uploadScreenshot(formData: FormData): Promise<UploadResult
     return { error: insertError.message };
   }
 
-  revalidatePath("/");
-  revalidatePath("/projects");
+  revalidateLibrary();
   return {};
 }
 
@@ -93,8 +82,7 @@ export async function renameScreenshot(
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
-  revalidatePath("/projects");
+  revalidateLibrary();
   return {};
 }
 
@@ -113,8 +101,7 @@ export async function moveScreenshot(
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
-  revalidatePath("/projects");
+  revalidateLibrary();
   return {};
 }
 
@@ -131,17 +118,13 @@ export async function deleteScreenshot(id: string): Promise<{ error?: string }> 
 
   if (fetchError) return { error: fetchError.message };
 
-  const { error: deleteError } = await supabase
-    .from("screenshots")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id);
+  const [{ error: deleteError }] = await Promise.all([
+    supabase.from("screenshots").delete().eq("id", id).eq("user_id", user.id),
+    supabase.storage.from("screenshots").remove([row.storage_path]),
+  ]);
 
   if (deleteError) return { error: deleteError.message };
 
-  await supabase.storage.from("screenshots").remove([row.storage_path]);
-
-  revalidatePath("/");
-  revalidatePath("/projects");
+  revalidateLibrary();
   return {};
 }

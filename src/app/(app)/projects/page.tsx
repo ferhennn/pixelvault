@@ -1,11 +1,12 @@
 import { ProjectCard } from "@/components/shared/project-card";
 import { NewProjectDialog } from "@/components/shared/new-project-dialog";
-import { getProjects, getScreenshots } from "@/lib/supabase/queries";
+import { getProjects, getProjectSummaries } from "@/lib/supabase/queries";
+import { pluralize } from "@/utils/pluralize";
 
 export default async function ProjectsPage() {
-  const [projects, screenshots] = await Promise.all([
+  const [projects, summaries] = await Promise.all([
     getProjects(),
-    getScreenshots(),
+    getProjectSummaries(),
   ]);
 
   return (
@@ -16,8 +17,8 @@ export default async function ProjectsPage() {
             Projects
           </h1>
           <p className="text-[15px] text-muted-foreground">
-            Screenshots grouped into folders. {projects.length} project
-            {projects.length === 1 ? "" : "s"}.
+            Screenshots grouped into folders. {projects.length}{" "}
+            {pluralize(projects.length, "project")}.
           </p>
         </div>
         <NewProjectDialog />
@@ -30,9 +31,7 @@ export default async function ProjectsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {projects.map((project) => {
-            const inProject = screenshots.filter(
-              (s) => s.projectId === project.id,
-            );
+            const summary = summaries.get(project.id);
             return (
               <ProjectCard
                 key={project.id}
@@ -41,8 +40,8 @@ export default async function ProjectsPage() {
                   name: project.name,
                   updatedAt: project.updated_at,
                 }}
-                count={inProject.length}
-                coverImages={inProject.slice(0, 4).map((s) => s.imageUrl)}
+                count={summary?.count ?? 0}
+                coverImages={summary?.coverImages ?? []}
               />
             );
           })}

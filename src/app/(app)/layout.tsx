@@ -7,8 +7,7 @@ export default async function AppGroupLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireUser();
-  const projects = await getProjects();
+  const [user, projects] = await Promise.all([requireUser(), getProjects()]);
 
   return (
     <AppShell email={user.email ?? ""} projects={projects}>

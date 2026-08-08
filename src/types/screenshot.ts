@@ -1,12 +1,6 @@
-export type ScreenshotCategory =
-  | "Code"
-  | "Design"
-  | "Errors"
-  | "Documents"
-  | "Receipts"
-  | "Ideas"
-  | "AI"
-  | "UI Inspiration";
+import type { ScreenshotCategory } from "@/lib/categories";
+
+export type { ScreenshotCategory };
 
 export interface Screenshot {
   id: string;

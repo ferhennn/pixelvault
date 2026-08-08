@@ -23,13 +23,21 @@ create table if not exists public.screenshots (
   tags text[] not null default '{}',
   width int not null,
   height int not null,
+  is_favorite boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Existing installs: schema.sql above is create-if-not-exists, so add the
+-- column here too for databases that already have the screenshots table.
+alter table public.screenshots
+  add column if not exists is_favorite boolean not null default false;
 
 create index if not exists screenshots_user_id_created_at_idx
   on public.screenshots (user_id, created_at desc);
 create index if not exists screenshots_project_id_created_at_idx
   on public.screenshots (project_id, created_at desc);
+create index if not exists screenshots_user_id_favorite_idx
+  on public.screenshots (user_id, created_at desc) where is_favorite;
 create index if not exists projects_user_id_updated_at_idx
   on public.projects (user_id, updated_at desc);
 

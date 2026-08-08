@@ -18,16 +18,20 @@ export const getProjects = cache(async (): Promise<ProjectRow[]> => {
 export async function getScreenshots(
   projectId?: string,
   category?: ScreenshotCategory,
+  favoritesOnly?: boolean,
 ): Promise<Screenshot[]> {
   const supabase = await createClient();
 
   let query = supabase
     .from("screenshots")
-    .select("id, project_id, title, storage_path, category, tags, width, height, created_at")
+    .select(
+      "id, project_id, title, storage_path, category, tags, width, height, is_favorite, created_at",
+    )
     .order("created_at", { ascending: false });
 
   if (projectId) query = query.eq("project_id", projectId);
   if (category) query = query.eq("category", category);
+  if (favoritesOnly) query = query.eq("is_favorite", true);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
@@ -51,6 +55,7 @@ export async function getScreenshots(
     createdAt: row.created_at,
     aspectRatio: row.width / row.height,
     projectId: row.project_id ?? undefined,
+    isFavorite: row.is_favorite,
   }));
 }
 

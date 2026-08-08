@@ -11,4 +11,5 @@ export interface Screenshot {
   createdAt: string;
   aspectRatio: number;
   projectId?: string;
+  isFavorite: boolean;
 }

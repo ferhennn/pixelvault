@@ -19,7 +19,8 @@ import { floatingIconButtonClass } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScreenshotLightbox } from "@/components/shared/screenshot-lightbox";
-import { moveScreenshot, deleteScreenshot } from "@/app/actions/screenshots";
+import { cn } from "@/lib/utils";
+import { moveScreenshot, deleteScreenshot, setFavorite } from "@/app/actions/screenshots";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,13 @@ export function ScreenshotCard({
   function handleMove(projectId: string | null) {
     startTransition(async () => {
       await moveScreenshot(screenshot.id, projectId);
+      router.refresh();
+    });
+  }
+
+  function handleToggleFavorite() {
+    startTransition(async () => {
+      await setFavorite(screenshot.id, !screenshot.isFavorite);
       router.refresh();
     });
   }
@@ -93,7 +101,14 @@ export function ScreenshotCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 transition-opacity duration-200 group-hover:from-black/80" />
 
         <div className="absolute right-2.5 top-2.5 flex gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <QuickAction icon={Heart} label="Favorite" />
+          <QuickAction
+            icon={Heart}
+            label={screenshot.isFavorite ? "Unfavorite" : "Favorite"}
+            onClick={handleToggleFavorite}
+            iconClassName={cn(
+              screenshot.isFavorite && "fill-red-500 text-red-500",
+            )}
+          />
           <QuickAction icon={ClipboardCopy} label="Copy OCR" />
 
           <DropdownMenu>
@@ -203,10 +218,12 @@ function QuickAction({
   icon: Icon,
   label,
   onClick,
+  iconClassName,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick?: () => void;
+  iconClassName?: string;
 }) {
   return (
     <button
@@ -218,7 +235,7 @@ function QuickAction({
       }}
       className={floatingIconButtonClass}
     >
-      <Icon className="h-[13px] w-[13px]" />
+      <Icon className={cn("h-[13px] w-[13px]", iconClassName)} />
     </button>
   );
 }

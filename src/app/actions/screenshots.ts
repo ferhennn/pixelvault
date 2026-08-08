@@ -105,6 +105,25 @@ export async function moveScreenshot(
   return {};
 }
 
+export async function setFavorite(
+  id: string,
+  isFavorite: boolean,
+): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("screenshots")
+    .update({ is_favorite: isFavorite })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidateLibrary();
+  return {};
+}
+
 export async function deleteScreenshot(id: string): Promise<{ error?: string }> {
   const user = await requireUser();
   const supabase = await createClient();

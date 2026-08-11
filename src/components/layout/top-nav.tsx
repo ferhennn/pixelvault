@@ -40,6 +40,7 @@ export function TopNav({
         <Button
           size="icon"
           variant="ghost"
+          aria-label="Notifications"
           className="rounded-full text-muted-foreground"
         >
           <Bell className="h-[18px] w-[18px]" />

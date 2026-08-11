@@ -16,19 +16,24 @@ export function HomeGallery({
   projects: ProjectRow[];
 }) {
   const [category, setCategory] = useState<ScreenshotCategory | null>(null);
+  const [query, setQuery] = useState("");
 
-  const filtered = useMemo(
-    () =>
-      category
-        ? screenshots.filter((s) => s.category === category)
-        : screenshots,
-    [screenshots, category],
-  );
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return screenshots.filter((s) => {
+      if (category && s.category !== category) return false;
+      if (!needle) return true;
+      return (
+        s.title.toLowerCase().includes(needle) ||
+        s.tags.some((tag) => tag.toLowerCase().includes(needle))
+      );
+    });
+  }, [screenshots, category, query]);
 
   return (
     <div className="flex flex-col gap-14">
       <section className="flex flex-col items-center gap-10 pt-4 text-center">
-        <SearchHero />
+        <SearchHero query={query} onQueryChange={setQuery} />
         <QuickFilters active={category} onChange={setCategory} />
       </section>
 
@@ -42,7 +47,7 @@ export function HomeGallery({
           <p className="text-[13.5px] text-muted-foreground">
             {screenshots.length === 0
               ? "No screenshots yet. Upload your first one from the top bar."
-              : "No screenshots match this filter."}
+              : "No screenshots match this search."}
           </p>
         )}
       </section>

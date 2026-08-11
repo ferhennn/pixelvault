@@ -10,7 +10,9 @@ export function formatRelativeDate(isoDate: string): string {
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === -1) return "Tomorrow";
+  if (diffDays > 0 && diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 0 && diffDays > -7) return `In ${-diffDays} days`;
 
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

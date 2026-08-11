@@ -47,9 +47,20 @@ export function AuthForm({ mode, action }: AuthFormProps) {
             <label htmlFor="email" className="text-[13px] font-medium text-foreground">
               Email
             </label>
-            <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              aria-invalid={!!state?.errors?.email}
+              aria-describedby={state?.errors?.email ? "email-error" : undefined}
+              required
+            />
             {state?.errors?.email && (
-              <p className="text-[12px] text-destructive">{state.errors.email[0]}</p>
+              <p id="email-error" className="text-[12px] text-destructive">
+                {state.errors.email[0]}
+              </p>
             )}
           </div>
 
@@ -57,9 +68,17 @@ export function AuthForm({ mode, action }: AuthFormProps) {
             <label htmlFor="password" className="text-[13px] font-medium text-foreground">
               Password
             </label>
-            <Input id="password" name="password" type="password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              aria-invalid={!!state?.errors?.password}
+              aria-describedby={state?.errors?.password ? "password-error" : undefined}
+              required
+            />
             {state?.errors?.password && (
-              <div className="text-[12px] text-destructive">
+              <div id="password-error" className="text-[12px] text-destructive">
                 {state.errors.password.map((error) => (
                   <p key={error}>{error}</p>
                 ))}
@@ -68,7 +87,9 @@ export function AuthForm({ mode, action }: AuthFormProps) {
           </div>
 
           {state?.message && (
-            <p className="text-[13px] text-destructive">{state.message}</p>
+            <p role="alert" className="text-[13px] text-destructive">
+              {state.message}
+            </p>
           )}
 
           <Button disabled={pending} type="submit" className="mt-1 w-full">

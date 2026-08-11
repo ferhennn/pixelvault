@@ -92,7 +92,7 @@ export function ScreenshotCard({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") setLightboxOpen(true);
         }}
-        className={`relative flex w-full cursor-pointer items-end bg-gradient-to-br ${categoryGradients[screenshot.category]}`}
+        className={`relative flex w-full cursor-pointer items-end bg-gradient-to-br outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${categoryGradients[screenshot.category]}`}
         style={{ aspectRatio: screenshot.aspectRatio }}
       >
         {screenshot.imageUrl && (

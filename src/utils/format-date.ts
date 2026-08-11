@@ -14,5 +14,9 @@ export function formatRelativeDate(isoDate: string): string {
   if (diffDays > 0 && diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 0 && diffDays > -7) return `In ${-diffDays} days`;
 
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 }

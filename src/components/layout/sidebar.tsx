@@ -21,14 +21,14 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
-  { href: "/search", label: "Search", icon: Search },
+  { href: "/search", label: "Search", icon: Search, soon: true },
   { href: "/", label: "Library", icon: ImageIcon },
   { href: "/projects", label: "Projects", icon: Folder },
   { href: "/collections", label: "Collections", icon: FolderKanban },
   { href: "/favorites", label: "Favorites", icon: Heart },
-  { href: "/recent", label: "Recent", icon: Clock },
-  { href: "/duplicates", label: "Duplicates", icon: Copy },
-  { href: "/ai-search", label: "AI Search", icon: Sparkles },
+  { href: "/recent", label: "Recent", icon: Clock, soon: true },
+  { href: "/duplicates", label: "Duplicates", icon: Copy, soon: true },
+  { href: "/ai-search", label: "AI Search", icon: Sparkles, soon: true },
 ] as const;
 
 export function Sidebar({
@@ -72,6 +72,7 @@ export function Sidebar({
             icon={item.icon}
             collapsed={collapsed}
             active={pathname === item.href}
+            soon={"soon" in item && item.soon}
           />
         ))}
       </nav>
@@ -83,6 +84,7 @@ export function Sidebar({
           icon={Settings}
           collapsed={collapsed}
           active={pathname === "/settings"}
+          soon
         />
         <SidebarLink
           href="/storage"
@@ -90,6 +92,7 @@ export function Sidebar({
           icon={HardDrive}
           collapsed={collapsed}
           active={pathname === "/storage"}
+          soon
         />
       </div>
 
@@ -121,14 +124,42 @@ function SidebarLink({
   icon: Icon,
   collapsed,
   active,
+  soon,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   collapsed: boolean;
   active: boolean;
+  soon?: boolean;
 }) {
-  const link = (
+  const content = (
+    <>
+      <Icon className="h-[18px] w-[18px] shrink-0" />
+      {!collapsed && (
+        <span className="flex flex-1 items-center justify-between gap-2">
+          {label}
+          {soon && (
+            <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium text-foreground/50">
+              Soon
+            </span>
+          )}
+        </span>
+      )}
+    </>
+  );
+
+  const link = soon ? (
+    <span
+      aria-disabled="true"
+      className={cn(
+        "flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium text-foreground/40",
+        collapsed && "justify-center px-0",
+      )}
+    >
+      {content}
+    </span>
+  ) : (
     <Link
       href={href}
       className={cn(
@@ -137,8 +168,7 @@ function SidebarLink({
         collapsed && "justify-center px-0",
       )}
     >
-      <Icon className="h-[18px] w-[18px] shrink-0" />
-      {!collapsed && <span>{label}</span>}
+      {content}
     </Link>
   );
 
@@ -147,7 +177,10 @@ function SidebarLink({
   return (
     <Tooltip>
       <TooltipTrigger render={link} />
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="right">
+        {label}
+        {soon ? " (Soon)" : ""}
+      </TooltipContent>
     </Tooltip>
   );
 }

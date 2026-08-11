@@ -9,6 +9,7 @@ import {
   Trash2,
   ExternalLink,
   ClipboardCopy,
+  Check,
   FolderInput,
   FolderMinus,
 } from "lucide-react";
@@ -49,7 +50,14 @@ export function ScreenshotCard({
   const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(screenshot.imageUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 1500);
+  }
 
   function handleMove(projectId: string | null) {
     startTransition(async () => {
@@ -109,7 +117,11 @@ export function ScreenshotCard({
               screenshot.isFavorite && "fill-red-500 text-red-500",
             )}
           />
-          <QuickAction icon={ClipboardCopy} label="Copy OCR" />
+          <QuickAction
+            icon={linkCopied ? Check : ClipboardCopy}
+            label="Copy image link"
+            onClick={handleCopyLink}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger

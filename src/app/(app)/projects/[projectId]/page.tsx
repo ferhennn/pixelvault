@@ -43,11 +43,7 @@ export default async function ProjectDetailPage(
       </div>
 
       {screenshots.length > 0 ? (
-        <MasonryGrid
-          screenshots={screenshots}
-          projects={projects}
-          currentProjectId={project.id}
-        />
+        <MasonryGrid screenshots={screenshots} projects={projects} />
       ) : (
         <p className="text-[13.5px] text-muted-foreground">
           No screenshots in this project yet.

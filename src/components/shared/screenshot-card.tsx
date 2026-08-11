@@ -41,11 +41,9 @@ import {
 export function ScreenshotCard({
   screenshot,
   projects = [],
-  currentProjectId,
 }: {
   screenshot: Screenshot;
   projects?: ProjectRow[];
-  currentProjectId?: string;
 }) {
   const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -137,7 +135,7 @@ export function ScreenshotCard({
               <FolderInput className="h-[13px] w-[13px]" />
             </DropdownMenuTrigger>
             <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-              {currentProjectId && screenshot.projectId === currentProjectId && (
+              {screenshot.projectId && (
                 <>
                   <DropdownMenuItem onClick={() => handleMove(null)}>
                     <FolderMinus className="h-4 w-4" />

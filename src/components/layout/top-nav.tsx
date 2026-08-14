@@ -46,7 +46,7 @@ export function TopNav({
           <Bell className="h-[18px] w-[18px]" />
         </Button>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger aria-label="Account menu">
             <Avatar className="h-8 w-8 cursor-pointer">
               <AvatarFallback className="bg-accent text-[13px] font-medium">
                 {initial}

@@ -106,7 +106,9 @@ export function ProjectActionDialogs({
             autoFocus
           />
           {actions.error && (
-            <p className="text-[12.5px] text-destructive">{actions.error}</p>
+            <p role="alert" className="text-[12.5px] text-destructive">
+              {actions.error}
+            </p>
           )}
           <DialogFooter>
             <Button

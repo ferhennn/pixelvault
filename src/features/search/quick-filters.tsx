@@ -16,6 +16,7 @@ export function QuickFilters({
         <button
           key={filter}
           onClick={() => onChange(active === filter ? null : filter)}
+          aria-pressed={active === filter}
           className={cn(
             "rounded-full border px-4 py-1.5 text-[13px] font-medium transition-colors",
             active === filter

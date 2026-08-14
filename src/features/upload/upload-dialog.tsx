@@ -197,10 +197,11 @@ export function UploadDialog({ projects }: { projects: ProjectRow[] }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-foreground">
+            <label htmlFor="upload-category" className="text-[13px] font-medium text-foreground">
               Category
             </label>
             <select
+              id="upload-category"
               value={category}
               onChange={(e) => setCategory(e.target.value as ScreenshotCategory)}
               className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"

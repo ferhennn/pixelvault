@@ -184,6 +184,7 @@ export function UploadDialog({ projects }: { projects: ProjectRow[] }) {
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
+                    aria-label="Remove file"
                     className="shrink-0 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-4 w-4" />

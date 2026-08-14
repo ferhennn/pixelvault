@@ -70,7 +70,11 @@ export function NewProjectDialog() {
           placeholder="Project name"
           autoFocus
         />
-        {error && <p className="text-[12.5px] text-destructive">{error}</p>}
+        {error && (
+          <p role="alert" className="text-[12.5px] text-destructive">
+            {error}
+          </p>
+        )}
         <DialogFooter>
           <Button type="button" disabled={!name.trim() || pending} onClick={handleCreate}>
             {pending ? "Creating..." : "Create"}

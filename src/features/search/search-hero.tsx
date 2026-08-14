@@ -23,6 +23,7 @@ export function SearchHero({
         <input
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
+          aria-label="Search screenshots"
           placeholder="Search screenshots..."
           className="w-full rounded-full border border-border bg-card py-4 pl-12 pr-5 text-[16px] shadow-sm outline-none transition-shadow placeholder:text-muted-foreground focus:shadow-md focus:ring-2 focus:ring-primary/20"
         />

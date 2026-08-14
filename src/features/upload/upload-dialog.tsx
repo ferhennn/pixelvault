@@ -215,10 +215,11 @@ export function UploadDialog({ projects }: { projects: ProjectRow[] }) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-foreground">
+            <label htmlFor="upload-project" className="text-[13px] font-medium text-foreground">
               Project
             </label>
             <select
+              id="upload-project"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
               className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"

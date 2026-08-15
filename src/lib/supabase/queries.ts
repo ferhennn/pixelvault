@@ -1,8 +1,26 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { ProjectRow } from "@/types/db";
+import { CATEGORIES } from "@/lib/categories";
+import type { ProjectRow, ScreenshotRow } from "@/types/db";
 import type { Screenshot, ScreenshotCategory } from "@/types/screenshot";
+
+function toScreenshot(
+  row: ScreenshotRow,
+  urlByPath: Map<string | null, string | null>,
+): Screenshot {
+  return {
+    id: row.id,
+    title: row.title,
+    imageUrl: urlByPath.get(row.storage_path) ?? "",
+    category: row.category,
+    tags: row.tags,
+    createdAt: row.created_at,
+    aspectRatio: row.width / row.height,
+    projectId: row.project_id ?? undefined,
+    isFavorite: row.is_favorite,
+  };
+}
 
 export const getProjects = cache(async (): Promise<ProjectRow[]> => {
   const supabase = await createClient();
@@ -46,17 +64,7 @@ export async function getScreenshots(
 
   const urlByPath = new Map(signed.map((s) => [s.path, s.signedUrl]));
 
-  return data.map((row) => ({
-    id: row.id,
-    title: row.title,
-    imageUrl: urlByPath.get(row.storage_path) ?? "",
-    category: row.category,
-    tags: row.tags,
-    createdAt: row.created_at,
-    aspectRatio: row.width / row.height,
-    projectId: row.project_id ?? undefined,
-    isFavorite: row.is_favorite,
-  }));
+  return data.map((row) => toScreenshot(row, urlByPath));
 }
 
 export type CoverSummary = { count: number; coverImages: string[] };
@@ -137,4 +145,93 @@ export async function getCategorySummaries(): Promise<Map<ScreenshotCategory, Ca
   }
 
   return summarizeByCover(pathsByCategory) as Promise<Map<ScreenshotCategory, CategorySummary>>;
+}
+
+export type DuplicateGroup = { key: string; screenshots: Screenshot[] };
+
+/** Groups screenshots that share a title (case-insensitive) and pixel dimensions. */
+export async function getDuplicateGroups(): Promise<DuplicateGroup[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("screenshots")
+    .select(
+      "id, project_id, title, storage_path, category, tags, width, height, is_favorite, created_at",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) return [];
+
+  const rowsByKey = new Map<string, ScreenshotRow[]>();
+  for (const row of data) {
+    const key = `${row.title.trim().toLowerCase()}::${row.width}x${row.height}`;
+    const rows = rowsByKey.get(key) ?? [];
+    rows.push(row);
+    rowsByKey.set(key, rows);
+  }
+
+  const duplicates = [...rowsByKey.entries()]
+    .filter(([, rows]) => rows.length > 1)
+    .sort((a, b) => b[1].length - a[1].length);
+
+  if (duplicates.length === 0) return [];
+
+  const paths = duplicates.flatMap(([, rows]) => rows.map((r) => r.storage_path));
+  const { data: signed, error: signError } = await supabase.storage
+    .from("screenshots")
+    .createSignedUrls(paths, 3600);
+
+  if (signError) throw new Error(signError.message);
+
+  const urlByPath = new Map(signed.map((s) => [s.path, s.signedUrl]));
+
+  return duplicates.map(([key, rows]) => ({
+    key,
+    screenshots: rows.map((row) => toScreenshot(row, urlByPath)),
+  }));
+}
+
+export type StorageStats = {
+  total: number;
+  byCategory: { category: ScreenshotCategory; count: number }[];
+  byProject: { projectId: string; name: string; count: number }[];
+};
+
+/** Screenshot counts by category and project — no signed URLs, cheap to compute. */
+export async function getStorageStats(): Promise<StorageStats> {
+  const supabase = await createClient();
+
+  const [{ data, error }, projects] = await Promise.all([
+    supabase.from("screenshots").select("category, project_id"),
+    getProjects(),
+  ]);
+
+  if (error) throw new Error(error.message);
+
+  const countByCategory = new Map<string, number>();
+  const countByProject = new Map<string, number>();
+  for (const row of data ?? []) {
+    countByCategory.set(row.category, (countByCategory.get(row.category) ?? 0) + 1);
+    if (row.project_id) {
+      countByProject.set(row.project_id, (countByProject.get(row.project_id) ?? 0) + 1);
+    }
+  }
+
+  const nameByProjectId = new Map(projects.map((p) => [p.id, p.name]));
+
+  return {
+    total: data?.length ?? 0,
+    byCategory: CATEGORIES.map((category) => ({
+      category,
+      count: countByCategory.get(category) ?? 0,
+    })),
+    byProject: [...countByProject.entries()]
+      .map(([projectId, count]) => ({
+        projectId,
+        name: nameByProjectId.get(projectId) ?? "Untitled",
+        count,
+      }))
+      .sort((a, b) => b.count - a.count),
+  };
 }

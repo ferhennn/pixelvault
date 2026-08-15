@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Search, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,13 +27,16 @@ export function TopNav({
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b border-border bg-background/80 px-6 backdrop-blur-md">
       <div className="flex flex-1 justify-center">
-        <button className="group flex w-full max-w-[420px] items-center gap-2 rounded-full border border-border bg-secondary px-4 py-2 text-left text-[13.5px] text-muted-foreground transition-colors hover:border-foreground/15">
+        <Link
+          href="/search"
+          className="group flex w-full max-w-[420px] items-center gap-2 rounded-full border border-border bg-secondary px-4 py-2 text-left text-[13.5px] text-muted-foreground transition-colors hover:border-foreground/15"
+        >
           <Search className="h-[15px] w-[15px] shrink-0" />
           <span className="flex-1">Search screenshots...</span>
           <kbd className="hidden rounded-md border border-border bg-background px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline-block">
             ⌘K
           </kbd>
-        </button>
+        </Link>
       </div>
 
       <div className="flex items-center gap-2">

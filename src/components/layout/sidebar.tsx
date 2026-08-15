@@ -21,14 +21,14 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
-  { href: "/search", label: "Search", icon: Search, soon: true },
+  { href: "/search", label: "Search", icon: Search },
   { href: "/", label: "Library", icon: ImageIcon },
   { href: "/projects", label: "Projects", icon: Folder },
   { href: "/collections", label: "Collections", icon: FolderKanban },
   { href: "/favorites", label: "Favorites", icon: Heart },
-  { href: "/recent", label: "Recent", icon: Clock, soon: true },
-  { href: "/duplicates", label: "Duplicates", icon: Copy, soon: true },
-  { href: "/ai-search", label: "AI Search", icon: Sparkles, soon: true },
+  { href: "/recent", label: "Recent", icon: Clock },
+  { href: "/duplicates", label: "Duplicates", icon: Copy },
+  { href: "/ai-search", label: "AI Search", icon: Sparkles },
 ] as const;
 
 export function Sidebar({
@@ -72,7 +72,6 @@ export function Sidebar({
             icon={item.icon}
             collapsed={collapsed}
             active={pathname === item.href}
-            soon={"soon" in item && item.soon}
           />
         ))}
       </nav>
@@ -84,7 +83,6 @@ export function Sidebar({
           icon={Settings}
           collapsed={collapsed}
           active={pathname === "/settings"}
-          soon
         />
         <SidebarLink
           href="/storage"
@@ -92,7 +90,6 @@ export function Sidebar({
           icon={HardDrive}
           collapsed={collapsed}
           active={pathname === "/storage"}
-          soon
         />
       </div>
 
